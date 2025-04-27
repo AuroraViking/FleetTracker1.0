@@ -30,22 +30,41 @@
     }).addTo(map);
 
     const busMarkers = {};
+    let trackedBus = null;
 
     function updateMarker(busName, lat, lon) {
       if (busMarkers[busName]) {
         busMarkers[busName].setLatLng([lat, lon]);
       } else {
-        const marker = L.marker([lat, lon]).addTo(map).bindPopup(busName);
+        const marker = L.marker([lat, lon])
+          .addTo(map)
+          .bindPopup(busName)
+          .bindTooltip(busName, { permanent: true, direction: "top" });
         busMarkers[busName] = marker;
+
+        const option = document.createElement("option");
+        option.value = busName;
+        option.innerText = busName;
+        document.getElementById("trackingSelect").appendChild(option);
+      }
+
+      if (trackedBus === busName) {
+        map.setView([lat, lon], 12);
       }
     }
 
     onValue(ref(database, 'buses'), snapshot => {
       const buses = snapshot.val();
-      for (const busName in buses) {
-        const bus = buses[busName];
-        updateMarker(busName, bus.latitude, bus.longitude);
+      if (buses) {
+        for (const busName in buses) {
+          const bus = buses[busName];
+          updateMarker(busName, bus.latitude, bus.longitude);
+        }
       }
+    });
+
+    document.getElementById("trackingSelect").addEventListener("change", (e) => {
+      trackedBus = e.target.value;
     });
   </script>
   <style>
@@ -53,9 +72,25 @@
       height: 100vh;
       width: 100%;
     }
+    #control-panel {
+      padding: 10px;
+      background: white;
+      position: absolute;
+      z-index: 999;
+      top: 10px;
+      left: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 <body>
+  <div id="control-panel">
+    <label for="trackingSelect">Track Bus:</label>
+    <select id="trackingSelect">
+      <option value="">None</option>
+    </select>
+  </div>
   <div id="map"></div>
 </body>
 </html>
