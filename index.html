@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Fleet Tracker - Tablet App</title>
+  <title>Fleet Tracker - Tablet</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script type="module">
-    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-    // Your web app's Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDQbeO6bpwrOZvaeNxqUeJIXR560aitg1Y",
       authDomain: "fleettracker-432a3.firebaseapp.com",
@@ -18,51 +17,90 @@
       appId: "1:483527051817:web:704be85d1cad45d71eea38"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
     let watchId = null;
 
-    function startTracking() {
-      const busName = document.getElementById('busName').value.trim();
+    document.getElementById('startButton').addEventListener('click', () => {
+      const busName = document.getElementById('busSelect').value;
       if (!busName) {
-        alert("Please enter the bus name!");
+        alert('Please select your bus.');
         return;
       }
-
       if (navigator.geolocation) {
         watchId = navigator.geolocation.watchPosition(position => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const timestamp = Date.now();
-
           set(ref(database, 'buses/' + busName), {
-            latitude: lat,
-            longitude: lon,
-            timestamp: timestamp
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            timestamp: Date.now()
           });
-
-          document.getElementById('status').innerText = `Tracking ${busName}: ${lat}, ${lon}`;
+          document.getElementById('status').innerText = `Tracking: ${busName}`;
         }, error => {
-          alert("Error getting location: " + error.message);
+          alert('Error getting location: ' + error.message);
         }, {
           enableHighAccuracy: true,
-          maximumAge: 10000,
+          maximumAge: 0,
           timeout: 5000
         });
       } else {
-        alert("Geolocation is not supported by this browser.");
+        alert('Geolocation is not supported by this device.');
       }
-    }
+    });
 
-    window.startTracking = startTracking;
+    document.getElementById('stopButton').addEventListener('click', () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+        document.getElementById('status').innerText = 'Tracking stopped.';
+      }
+    });
   </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: #00ffcc;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    select, button {
+      margin-top: 10px;
+      font-size: 18px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      color: #1e3c72;
+    }
+    #startButton {
+      background-color: #00ffcc;
+      margin-right: 10px;
+    }
+    #stopButton {
+      background-color: #ff4c4c;
+    }
+    #logo {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      width: 100px;
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
-  <h1>Fleet Tracker - Send Location</h1>
-  <input type="text" id="busName" placeholder="Enter Bus Name" />
-  <button onclick="startTracking()">Start Tracking</button>
-  <p id="status">Status: Not Tracking</p>
+  <h1>Fleet Tracker - Tablet</h1>
+  <select id="busSelect">
+    <option value="">Select Bus</option>
+    <option value="Lúxusinn - AYX70">Lúxusinn - AYX70</option>
+    <option value="Afi Stjáni - MAF43">Afi Stjáni - MAF43</option>
+    <option value="Meistarinn - TZE50">Meistarinn - TZE50</option>
+  </select>
+  <br>
+  <button id="startButton">Start Tracking</button>
+  <button id="stopButton">Stop Tracking</button>
+  <p id="status">Not tracking.</p>
+  <img id="logo" src="Black.svg" alt="Aurora Viking Logo">
 </body>
 </html>
