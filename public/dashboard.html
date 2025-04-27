@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fleet Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDQbeO6bpwrOZvaeNxqUeJIXR560aitg1Y",
+      authDomain: "fleettracker-432a3.firebaseapp.com",
+      projectId: "fleettracker-432a3",
+      storageBucket: "fleettracker-432a3.firebasestorage.app",
+      messagingSenderId: "483527051817",
+      appId: "1:483527051817:web:704be85d1cad45d71eea38"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const map = L.map('map').setView([64.1466, -21.9426], 9); // Centered around Reykjavik
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const busMarkers = {};
+
+    function updateMarker(busName, lat, lon) {
+      if (busMarkers[busName]) {
+        busMarkers[busName].setLatLng([lat, lon]);
+      } else {
+        const marker = L.marker([lat, lon]).addTo(map).bindPopup(busName);
+        busMarkers[busName] = marker;
+      }
+    }
+
+    onValue(ref(database, 'buses'), snapshot => {
+      const buses = snapshot.val();
+      for (const busName in buses) {
+        const bus = buses[busName];
+        updateMarker(busName, bus.latitude, bus.longitude);
+      }
+    });
+  </script>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+</body>
+</html>
