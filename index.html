@@ -75,52 +75,68 @@
       width: 150px;
       margin: 30px auto 10px auto;
       display: block;
-      filter: drop-shadow(0px 0px 30px #00ffe1) brightness(10);
-      opacity: 0.9;
+      filter: drop-shadow(0px 0px 50px #00ffe1) brightness(20) saturate(3);
+      opacity: 1;
+      animation: floatLogo 3s ease-in-out infinite;
+    }
+
+    @keyframes floatLogo {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
 
     h1 {
-      font-size: 2.5em;
+      font-size: 2.8em;
       margin-bottom: 20px;
       color: #00ffe1;
-      text-shadow: 0 0 5px #00ffe1, 0 0 10px #00ffe1;
+      text-shadow: 0 0 10px #00ffe1, 0 0 20px #00ffe1;
+      animation: pulseTitle 2s infinite alternate;
+    }
+
+    @keyframes pulseTitle {
+      0% { text-shadow: 0 0 10px #00ffe1, 0 0 20px #00ffe1; }
+      100% { text-shadow: 0 0 20px #00ffe1, 0 0 30px #00ffe1; }
     }
 
     select, button {
       margin-top: 10px;
-      font-size: 18px;
-      padding: 10px;
-      background: #222;
-      border: 1px solid #00ffe1;
+      font-size: 20px;
+      padding: 12px;
+      background: #111;
+      border: 2px solid #00ffe1;
       color: white;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s, transform 0.3s;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 0 10px #00ffe1;
     }
 
     select:hover, button:hover {
       background: #00ffe1;
       color: black;
-      transform: scale(1.05);
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #00ffe1, 0 0 30px #00ffe1;
     }
 
     #startButton {
       background: #00ffe1;
       color: black;
       margin-right: 10px;
+      box-shadow: 0 0 15px #00ffe1, 0 0 25px #00ffe1;
     }
 
     #stopButton {
       background: #ff4c4c;
       color: white;
+      box-shadow: 0 0 15px #ff4c4c, 0 0 25px #ff4c4c;
     }
 
     #status {
       margin-top: 20px;
       color: #00ffe1;
-      font-size: 1.5em;
-      text-shadow: 0 0 10px #00ffe1;
+      font-size: 1.7em;
+      text-shadow: 0 0 10px #00ffe1, 0 0 20px #00ffe1;
     }
   </style>
 </head>
