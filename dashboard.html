@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fleet Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    // TODO: Replace these with your own Firebase project config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const map = L.map('map').setView([64.1466, -21.9426], 9); // Centered on Reykjavik for now
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const busMarkers = {};
+
+    function updateMarker(busName, lat, lon) {
+      if (busMarkers[busName]) {
+        busMarkers[busName].setLatLng([lat, lon]);
+      } else {
+        const marker = L.marker([lat, lon]).addTo(map).bindPopup(busName);
+        busMarkers[busName] = marker;
+      }
+    }
+
+    database.ref('buses').on('value', snapshot => {
+      const buses = snapshot.val();
+      for (const busName in buses) {
+        const bus = buses[busName];
+        updateMarker(busName, bus.latitude, bus.longitude);
+      }
+    });
+  </script>
+</body>
+</html>
