@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fleet Tracker - Tablet App</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body>
+  <h1>Fleet Tracker - Send Location</h1>
+  <input type="text" id="busName" placeholder="Enter Bus Name" />
+  <button onclick="startTracking()">Start Tracking</button>
+  <p id="status">Status: Not Tracking</p>
+
+  <script>
+    // TODO: Replace these with your own Firebase project config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    let watchId = null;
+
+    function startTracking() {
+      const busName = document.getElementById('busName').value.trim();
+      if (!busName) {
+        alert("Please enter the bus name!");
+        return;
+      }
+
+      if (navigator.geolocation) {
+        watchId = navigator.geolocation.watchPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const timestamp = Date.now();
+
+          database.ref('buses/' + busName).set({
+            latitude: lat,
+            longitude: lon,
+            timestamp: timestamp
+          });
+
+          document.getElementById('status').innerText = `Tracking ${busName}: ${lat}, ${lon}`;
+        }, error => {
+          alert("Error getting location: " + error.message);
+        }, {
+          enableHighAccuracy: true,
+          maximumAge: 10000,
+          timeout: 5000
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+  </script>
+</body>
+</html>
