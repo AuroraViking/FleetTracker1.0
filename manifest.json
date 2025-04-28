@@ -1,82 +1,25 @@
-const CACHE_NAME = 'fleet-tracker-v1';
-const urlsToCache = [
-  '/FleetTracker1.0/',
-  '/FleetTracker1.0/index.html',
-  '/FleetTracker1.0/manifest.json',
-  '/FleetTracker1.0/Black.svg',
-  '/FleetTracker1.0/icon-192.png',
-  '/FleetTracker1.0/icon-512.png',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-];
-
-// Fix for GitHub Pages - handle the base path correctly
-const baseUrl = '/FleetTracker1.0';
-
-self.addEventListener('install', (event) => {
-  console.log('Service Worker installing');
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Cache opened');
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating');
-  // Clean up old caches
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-  return self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached response if found
-        if (response) {
-          return response;
-        }
-        
-        // Clone the request because it's a one-time use
-        const fetchRequest = event.request.clone();
-        
-        return fetch(fetchRequest)
-          .then((response) => {
-            // Don't cache if not a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            
-            // Clone the response
-            const responseToCache = response.clone();
-            
-            // Cache the fetched response
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-            
-            return response;
-          })
-          .catch(() => {
-            // If the network is unavailable and the request is for a page,
-            // return the offline page
-            if (event.request.mode === 'navigate') {
-              return caches.match('/FleetTracker1.0/index.html');
-            }
-          });
-      })
-  );
-});
+{
+  "name": "Aurora Viking Fleet Tracker",
+  "short_name": "Fleet Tracker",
+  "start_url": "https://auroraviking.github.io/FleetTracker1.0/index.html",
+  "scope": "https://auroraviking.github.io/FleetTracker1.0/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#00ffe1",
+  "description": "Live tracking of Aurora Viking fleet vehicles with stunning aurora-themed design.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
