@@ -12,7 +12,7 @@
       apiKey: "AIzaSyDQbeO6bpwrOZvaeNxqUeJIXR560aitg1Y",
       authDomain: "fleettracker-432a3.firebaseapp.com",
       projectId: "fleettracker-432a3",
-      storageBucket: "fleettracker-432a3.firebasestorage.app",
+      storageBucket: "fleettracker-432a3.appspot.com",
       messagingSenderId: "483527051817",
       appId: "1:483527051817:web:704be85d1cad45d71eea38"
     };
@@ -21,6 +21,7 @@
     const database = getDatabase(app);
 
     let watchId = null;
+    let lastSentTime = 0;
 
     document.getElementById('startButton').addEventListener('click', () => {
       const busName = document.getElementById('busSelect').value;
@@ -30,11 +31,15 @@
       }
       if (navigator.geolocation) {
         watchId = navigator.geolocation.watchPosition(position => {
-          set(ref(database, 'buses/' + busName), {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            timestamp: Date.now()
-          });
+          const now = Date.now();
+          if (now - lastSentTime >= 10000) { // Only send every 10 seconds
+            set(ref(database, 'buses/' + busName), {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              timestamp: now
+            });
+            lastSentTime = now;
+          }
           document.getElementById('status').innerText = `Tracking: ${busName}`;
         }, error => {
           alert('Error getting location: ' + error.message);
