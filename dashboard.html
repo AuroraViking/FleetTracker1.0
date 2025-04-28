@@ -57,14 +57,6 @@
             className: "tracking-tooltip"
           });
         busMarkers[busName] = marker;
-
-        const trackingSelect = document.getElementById("trackingSelect");
-        if (!Array.from(trackingSelect.options).some(option => option.value === busName)) {
-          const option = document.createElement("option");
-          option.value = busName;
-          option.innerText = busName;
-          trackingSelect.appendChild(option);
-        }
       }
 
       if (trackedBus === busName) {
@@ -102,13 +94,21 @@
 
     onValue(ref(database, 'buses'), snapshot => {
       const buses = snapshot.val();
-      const trackingSelect = document.getElementById("trackingSelect");
-      trackingSelect.innerHTML = '<option value="">None</option>';
 
       if (buses) {
         for (const busName in buses) {
           const bus = buses[busName];
           updateMarker(busName, bus.latitude, bus.longitude);
+
+          const trackingSelect = document.getElementById("trackingSelect");
+          if (!Array.from(trackingSelect.options).some(option => option.value === busName)) {
+            if (approvedBuses.includes(busName)) {
+              const option = document.createElement("option");
+              option.value = busName;
+              option.innerText = busName;
+              trackingSelect.appendChild(option);
+            }
+          }
         }
       }
     });
