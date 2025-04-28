@@ -1,7 +1,7 @@
 {
   "name": "Aurora Viking Fleet Tracker",
   "short_name": "Fleet Tracker",
-  "start_url": ".",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
