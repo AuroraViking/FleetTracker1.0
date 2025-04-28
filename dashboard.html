@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Fleet Dashboard</title>
+  <title>Aurora Viking - Fleet Tracker</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script type="module">
@@ -13,7 +13,7 @@
       apiKey: "AIzaSyDQbeO6bpwrOZvaeNxqUeJIXR560aitg1Y",
       authDomain: "fleettracker-432a3.firebaseapp.com",
       projectId: "fleettracker-432a3",
-      storageBucket: "fleettracker-432a3.firebasestorage.app",
+      storageBucket: "fleettracker-432a3.appspot.com",
       messagingSenderId: "483527051817",
       appId: "1:483527051817:web:704be85d1cad45d71eea38"
     };
@@ -28,6 +28,7 @@
 
     const busMarkers = {};
     let trackedBus = null;
+    const lastUpdateTimes = {};
 
     const approvedBuses = [
       "Lúxusinn - AYX70",
@@ -35,8 +36,14 @@
       "Meistarinn - TZE50"
     ];
 
+    function formatTime(date) {
+      return date.toLocaleTimeString('en-GB', { hour12: false });
+    }
+
     function updateMarker(busName, lat, lon) {
       if (!approvedBuses.includes(busName)) return;
+
+      lastUpdateTimes[busName] = new Date();
 
       if (busMarkers[busName]) {
         busMarkers[busName].setLatLng([lat, lon]);
@@ -44,7 +51,11 @@
         const marker = L.marker([lat, lon])
           .addTo(map)
           .bindPopup(`<b style='font-size: 16px;'>${busName}</b>`)
-          .bindTooltip(`<div style='font-weight: bold; font-size: 14px; background: rgba(0,0,0,0.7); color: #00ffe1; padding: 2px 6px; border-radius: 4px;'>${busName}</div>`, { permanent: true, direction: "top" });
+          .bindTooltip(generateTooltipHTML(busName, true), {
+            permanent: true,
+            direction: "top",
+            className: "tracking-tooltip"
+          });
         busMarkers[busName] = marker;
 
         const trackingSelect = document.getElementById("trackingSelect");
@@ -60,6 +71,34 @@
         map.setView([lat, lon], 12);
       }
     }
+
+    function generateTooltipHTML(busName, isTracking) {
+      if (isTracking) {
+        return `<div class="tracking-text">${busName} - Tracking</div>`;
+      } else {
+        const lastSeen = lastUpdateTimes[busName] ? formatTime(lastUpdateTimes[busName]) : "Unknown";
+        return `<div class="not-tracking-text">${busName} - Not tracking since ${lastSeen}</div>`;
+      }
+    }
+
+    setInterval(() => {
+      const now = new Date();
+      Object.keys(busMarkers).forEach(busName => {
+        const lastTime = lastUpdateTimes[busName];
+        const diffSeconds = lastTime ? (now - lastTime) / 1000 : Infinity;
+        const isTracking = diffSeconds <= 60;
+
+        busMarkers[busName].unbindTooltip();
+        busMarkers[busName].bindTooltip(
+          generateTooltipHTML(busName, isTracking),
+          {
+            permanent: true,
+            direction: "top",
+            className: isTracking ? "tracking-tooltip" : "not-tracking-tooltip"
+          }
+        );
+      });
+    }, 10000);
 
     onValue(ref(database, 'buses'), snapshot => {
       const buses = snapshot.val();
@@ -141,6 +180,28 @@
     @keyframes floatLogo {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
+    }
+
+    .tracking-tooltip .tracking-text {
+      font-weight: bold;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #00ffe1;
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #00ffe1, 0 0 20px #00ffe1;
+      text-shadow: 0 0 5px #00ffe1;
+    }
+
+    .not-tracking-tooltip .not-tracking-text {
+      font-weight: bold;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #888;
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #555;
+      text-shadow: 0 0 3px #555;
     }
   </style>
 </head>
