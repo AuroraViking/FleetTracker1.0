@@ -3,7 +3,7 @@
   "short_name": "Fleet Tracker",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#00ffe1",
@@ -21,3 +21,4 @@
     }
   ]
 }
+
