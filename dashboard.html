@@ -79,7 +79,7 @@
       Object.keys(busMarkers).forEach(busName => {
         const lastTime = lastUpdateTimes[busName];
         const diffSeconds = lastTime ? (now - lastTime) / 1000 : Infinity;
-        const isTracking = diffSeconds <= 60;
+        const isTracking = diffSeconds <= 10;
 
         busMarkers[busName].unbindTooltip();
         busMarkers[busName].bindTooltip(
@@ -217,3 +217,4 @@
   <img id="logo" src="Black.svg" alt="Aurora Viking Logo">
 </body>
 </html>
+
