@@ -1,0 +1,16 @@
+{
+  "name": "Aurora Viking Fleet Tracker",
+  "short_name": "Fleet Tracker",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00ffe1",
+  "description": "Track Aurora Viking fleet vehicles live.",
+  "icons": [
+    {
+      "src": "Black.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
