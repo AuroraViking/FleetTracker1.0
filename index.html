@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="/FleetTracker1.0/manifest.json">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#00ffe1">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
@@ -116,13 +116,25 @@
 
   <script>
     let deferredPrompt;
+    let refreshing = false;
     
     // Check if service worker is supported
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/FleetTracker1.0/service-worker.js')
+        navigator.serviceWorker.register('service-worker.js')
           .then(registration => {
             console.log('Service Worker registered with scope:', registration.scope);
+            
+            // Detect controller change and refresh the page
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+              }
+            });
+            
+            // Check for updates on load
+            registration.update();
           })
           .catch(error => {
             console.error('Service Worker registration failed:', error);
