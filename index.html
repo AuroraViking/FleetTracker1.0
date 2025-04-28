@@ -7,71 +7,6 @@
   <meta charset="UTF-8">
   <title>Fleet Tracker - Tablet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/FleetTracker1.0/service-worker.js')
-    .then(reg => console.log('Service Worker Registered'))
-    .catch(err => console.error('Service Worker Registration Failed:', err));
-}
-</script>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDQbeO6bpwrOZvaeNxqUeJIXR560aitg1Y",
-      authDomain: "fleettracker-432a3.firebaseapp.com",
-      projectId: "fleettracker-432a3",
-      storageBucket: "fleettracker-432a3.appspot.com",
-      messagingSenderId: "483527051817",
-      appId: "1:483527051817:web:704be85d1cad45d71eea38"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-
-    let watchId = null;
-    let lastSentTime = 0;
-
-    document.getElementById('startButton').addEventListener('click', () => {
-      const busName = document.getElementById('busSelect').value;
-      if (!busName) {
-        alert('Please select your bus.');
-        return;
-      }
-      if (navigator.geolocation) {
-        watchId = navigator.geolocation.watchPosition(position => {
-          const now = Date.now();
-          if (now - lastSentTime >= 10000) { // Only send every 10 seconds
-            set(ref(database, 'buses/' + busName), {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              timestamp: now
-            });
-            lastSentTime = now;
-          }
-          document.getElementById('status').innerText = `Tracking: ${busName}`;
-        }, error => {
-          alert('Error getting location: ' + error.message);
-        }, {
-          enableHighAccuracy: true,
-          maximumAge: 0,
-          timeout: 5000
-        });
-      } else {
-        alert('Geolocation is not supported by this device.');
-      }
-    });
-
-    document.getElementById('stopButton').addEventListener('click', () => {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-        document.getElementById('status').innerText = 'Tracking stopped.';
-      }
-    });
-  </script>
   <style>
     body {
       margin: 0;
@@ -154,6 +89,14 @@ if ('serviceWorker' in navigator) {
       font-size: 1.7em;
       text-shadow: 0 0 10px #00ffe1, 0 0 20px #00ffe1;
     }
+    
+    #installButton {
+      display: none;
+      background: #5b42f3;
+      color: white;
+      margin-top: 20px;
+      box-shadow: 0 0 15px #5b42f3, 0 0 25px #5b42f3;
+    }
   </style>
 </head>
 <body>
@@ -168,7 +111,107 @@ if ('serviceWorker' in navigator) {
   <button id="startButton">Start Tracking</button>
   <button id="stopButton">Stop Tracking</button>
   <p id="status">Not tracking.</p>
+  <button id="installButton">Install App</button>
   <img id="logo" src="Black.svg" alt="Aurora Viking Logo">
+
+  <script>
+    let deferredPrompt;
+    
+    // Check if service worker is supported
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/FleetTracker1.0/service-worker.js')
+          .then(reg => console.log('Service Worker Registered with scope:', reg.scope))
+          .catch(err => console.error('Service Worker Registration Failed:', err));
+      });
+    }
+
+    // Handle installation prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      
+      // Update UI to notify the user they can add to home screen
+      document.getElementById('installButton').style.display = 'block';
+    });
+
+    // When "Install" button is clicked
+    document.getElementById('installButton').addEventListener('click', (e) => {
+      // Show the prompt
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the installation prompt');
+          } else {
+            console.log('User dismissed the installation prompt');
+          }
+          deferredPrompt = null;
+          document.getElementById('installButton').style.display = 'none';
+        });
+      }
+    });
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDQbeO6bpwrOZvaeNxqUeJIXR560aitg1Y",
+      authDomain: "fleettracker-432a3.firebaseapp.com",
+      projectId: "fleettracker-432a3",
+      storageBucket: "fleettracker-432a3.appspot.com",
+      messagingSenderId: "483527051817",
+      appId: "1:483527051817:web:704be85d1cad45d71eea38"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    let watchId = null;
+    let lastSentTime = 0;
+
+    document.getElementById('startButton').addEventListener('click', () => {
+      const busName = document.getElementById('busSelect').value;
+      if (!busName) {
+        alert('Please select your bus.');
+        return;
+      }
+      if (navigator.geolocation) {
+        watchId = navigator.geolocation.watchPosition(position => {
+          const now = Date.now();
+          if (now - lastSentTime >= 10000) { // Only send every 10 seconds
+            set(ref(database, 'buses/' + busName), {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              timestamp: now
+            });
+            lastSentTime = now;
+          }
+          document.getElementById('status').innerText = `Tracking: ${busName}`;
+        }, error => {
+          alert('Error getting location: ' + error.message);
+        }, {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 5000
+        });
+      } else {
+        alert('Geolocation is not supported by this device.');
+      }
+    });
+
+    document.getElementById('stopButton').addEventListener('click', () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+        document.getElementById('status').innerText = 'Tracking stopped.';
+      }
+    });
+  </script>
 </body>
 </html>
-
