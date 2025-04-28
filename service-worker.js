@@ -10,6 +10,7 @@ const urlsToCache = [
   // Add other important resources
 ];
 
+
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing');
   event.waitUntil(
