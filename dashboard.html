@@ -40,10 +40,11 @@
       return date.toLocaleTimeString('en-GB', { hour12: false });
     }
 
-    function updateMarker(busName, lat, lon) {
+    function updateMarker(busName, lat, lon, timestamp) {
       if (!approvedBuses.includes(busName)) return;
+      if (typeof lat !== 'number' || typeof lon !== 'number' || lat === 0 || lon === 0) return;
 
-      lastUpdateTimes[busName] = new Date();
+      lastUpdateTimes[busName] = new Date(timestamp);
 
       if (busMarkers[busName]) {
         busMarkers[busName].setLatLng([lat, lon]);
@@ -98,7 +99,7 @@
       if (buses) {
         for (const busName in buses) {
           const bus = buses[busName];
-          updateMarker(busName, bus.latitude, bus.longitude);
+          updateMarker(busName, bus.latitude, bus.longitude, bus.timestamp);
 
           const trackingSelect = document.getElementById("trackingSelect");
           if (!Array.from(trackingSelect.options).some(option => option.value === busName)) {
