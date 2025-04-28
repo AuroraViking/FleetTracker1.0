@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="manifest" href="/FleetTracker1.0/manifest.json">
+  <meta name="theme-color" content="#00ffe1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <title>Fleet Tracker - Tablet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script type="module">
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/FleetTracker1.0/service-worker.js')
+    .then(reg => console.log('Service Worker Registered'))
+    .catch(err => console.error('Service Worker Registration Failed:', err));
+}
+</script>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
@@ -160,3 +171,4 @@
   <img id="logo" src="Black.svg" alt="Aurora Viking Logo">
 </body>
 </html>
+
